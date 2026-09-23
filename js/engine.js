@@ -1,11 +1,10 @@
 // js/engine.js
 
+
 // ============================================================
 // PROC ENGINE
 // ============================================================
 
-// Maximum number of recursive generations.
-// This prevents accidental infinite proc chains.
 const MAX_PROC_DEPTH = 8;
 
 
@@ -13,44 +12,61 @@ const MAX_PROC_DEPTH = 8;
 // LUCK
 // ============================================================
 
-// Returns the probability of at least one successful roll
-// when a proc has multiple attempts.
-//
-// Example:
-// 10% chance with 0 Luck  -> 10%
-// 10% chance with 1 Luck  -> 19%
-// 10% chance with 2 Luck  -> 27.1%
-//
-// Positive Luck gives additional rolls.
-// Negative Luck reduces the effective chance.
-function getLuckAdjustedChance(chance, luck) {
+function getLuckAdjustedChance(
+    chance,
+    luck
+) {
 
-    chance = Math.max(0, Math.min(1, chance));
+    chance =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                chance
+            )
+        );
 
-    luck = Number(luck) || 0;
+
+    luck =
+        Number(luck) || 0;
+
 
     if (luck === 0) {
+
         return chance;
+
     }
+
 
     if (luck > 0) {
 
-        let attempts = Math.floor(luck) + 1;
+        const attempts =
+            Math.floor(luck) + 1;
 
-        return 1 - Math.pow(
-            1 - chance,
-            attempts
+
+        return (
+            1 -
+            Math.pow(
+                1 - chance,
+                attempts
+            )
         );
+
     }
 
-    // Negative Luck is handled as a reduction in probability.
-    // This keeps the calculator stable for negative values.
-    const multiplier = 1 + (luck / 100);
+
+    const multiplier =
+        1 + luck / 100;
+
 
     return Math.max(
         0,
-        Math.min(1, chance * multiplier)
+        Math.min(
+            1,
+            chance * multiplier
+        )
     );
+
 }
 
 
@@ -65,38 +81,61 @@ function getProcChance(
     luck = 0
 ) {
 
-    const item = ITEMS[itemKey];
+    const item =
+        ITEMS[itemKey];
+
 
     if (!item) {
+
         return 0;
+
     }
+
 
     if (stacks <= 0) {
+
         return 0;
+
     }
+
 
     if (item.special) {
+
         return 0;
+
     }
 
-    let rawChance = item.chance(stacks);
 
-    rawChance *= procCoefficient;
+    let rawChance =
+        item.chance(
+            stacks
+        );
 
-    rawChance = Math.max(
-        0,
-        Math.min(1, rawChance)
-    );
+
+    rawChance *=
+        procCoefficient;
+
+
+    rawChance =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                rawChance
+            )
+        );
+
 
     return getLuckAdjustedChance(
         rawChance,
         luck
     );
+
 }
 
 
 // ============================================================
-// ITEM DAMAGE
+// PROC DAMAGE
 // ============================================================
 
 function getProcDamage(
@@ -105,29 +144,48 @@ function getProcDamage(
     sourceDamage
 ) {
 
-    const item = ITEMS[itemKey];
+    const item =
+        ITEMS[itemKey];
+
 
     if (!item) {
+
         return 0;
+
     }
+
 
     if (stacks <= 0) {
+
         return 0;
+
     }
 
-    const multiplier = item.damageMultiplier(stacks);
 
-    return sourceDamage * multiplier;
+    const multiplier =
+        item.damageMultiplier(
+            stacks
+        );
+
+
+    return (
+        sourceDamage *
+        multiplier
+    );
+
 }
 
 
 // ============================================================
-// NODE CREATION
+// ROOT NODE
 // ============================================================
 
-function createRootNode(damage) {
+function createRootNode(
+    damage
+) {
 
     return {
+
         id: "root",
 
         type: "root",
@@ -150,10 +208,18 @@ function createRootNode(damage) {
 
         sourceDamage: damage,
 
+        stacks: 1,
+
         children: []
+
     };
+
 }
 
+
+// ============================================================
+// PROC NODE
+// ============================================================
 
 function createProcNode(
     itemKey,
@@ -165,7 +231,9 @@ function createProcNode(
     parentId
 ) {
 
-    const item = ITEMS[itemKey];
+    const item =
+        ITEMS[itemKey];
+
 
     return {
 
@@ -190,24 +258,32 @@ function createProcNode(
 
         damage: procDamage,
 
-        expectedDamage: procDamage * chance,
+        expectedDamage:
+            procDamage *
+            chance,
 
         chance: chance,
 
-        procCoefficient: item.procCoefficient,
+        procCoefficient:
+            item.procCoefficient,
 
-        sourceDamage: sourceDamage,
+        sourceDamage:
+            sourceDamage,
 
         children: []
+
     };
+
 }
 
 
 // ============================================================
-// PROC TREE GENERATION
+// BUILD TREE
 // ============================================================
 
-function buildProcTree(options) {
+function buildProcTree(
+    options
+) {
 
     const {
 
@@ -226,37 +302,33 @@ function buildProcTree(options) {
     } = options || {};
 
 
-    // --------------------------------------------------------
-    // Determine starting damage
-    // --------------------------------------------------------
-
     let baseDamage;
 
-    if (damage === null || damage === undefined) {
 
-        baseDamage = getBaseDamage(
-            survivor,
-            level
-        );
+    if (
+        damage === null ||
+        damage === undefined
+    ) {
+
+        baseDamage =
+            getBaseDamage(
+                survivor,
+                level
+            );
 
     } else {
 
-        baseDamage = Number(damage) || 0;
+        baseDamage =
+            Number(damage) || 0;
+
     }
 
 
-    // --------------------------------------------------------
-    // Create root
-    // --------------------------------------------------------
+    const root =
+        createRootNode(
+            baseDamage
+        );
 
-    const root = createRootNode(
-        baseDamage
-    );
-
-
-    // --------------------------------------------------------
-    // Build recursive tree
-    // --------------------------------------------------------
 
     buildChildren(
         root,
@@ -268,34 +340,38 @@ function buildProcTree(options) {
     );
 
 
-    // --------------------------------------------------------
-    // Calculate totals
-    // --------------------------------------------------------
-
-    const totals = calculateTreeTotals(
-        root
-    );
+    const totals =
+        calculateTreeTotals(
+            root
+        );
 
 
     return {
 
         root: root,
 
-        baseDamage: baseDamage,
+        baseDamage:
+            baseDamage,
 
-        expectedProcDamage: totals.procDamage,
+        expectedProcDamage:
+            totals.procDamage,
 
-        totalExpectedDamage: totals.totalDamage,
+        totalExpectedDamage:
+            totals.totalDamage,
 
-        nodeCount: totals.nodeCount,
+        nodeCount:
+            totals.nodeCount,
 
-        maxDepth: totals.maxDepth
+        maxDepth:
+            totals.maxDepth
+
     };
+
 }
 
 
 // ============================================================
-// RECURSIVE CHILD GENERATION
+// BUILD CHILDREN
 // ============================================================
 
 function buildChildren(
@@ -307,120 +383,125 @@ function buildChildren(
     history
 ) {
 
-    if (depth >= MAX_PROC_DEPTH) {
+    if (
+        depth >=
+        MAX_PROC_DEPTH
+    ) {
+
         return;
+
     }
 
 
-    for (const itemKey of ITEM_ORDER) {
+    for (
+        const itemKey of ITEM_ORDER
+    ) {
 
-        const stacks = Number(
-            inventory[itemKey] || 0
-        );
+        const stacks =
+            Number(
+                inventory[itemKey] || 0
+            );
 
 
-        // No item in inventory.
         if (stacks <= 0) {
+
             continue;
+
         }
 
 
-        const item = ITEMS[itemKey];
+        const item =
+            ITEMS[itemKey];
+
 
         if (!item) {
+
             continue;
+
         }
 
 
-        // Special items are handled separately later.
         if (item.special) {
+
             continue;
+
         }
 
 
-        // ----------------------------------------------------
-        // Proc masks / chain protection
-        // ----------------------------------------------------
+        if (
+            history.has(itemKey)
+        ) {
 
-        if (history.has(itemKey)) {
             continue;
+
         }
 
 
-        // ----------------------------------------------------
-        // Calculate chance
-        // ----------------------------------------------------
-
-        const chance = getProcChance(
-            itemKey,
-            stacks,
-            incomingProcCoefficient,
-            luck
-        );
+        const chance =
+            getProcChance(
+                itemKey,
+                stacks,
+                incomingProcCoefficient,
+                luck
+            );
 
 
         if (chance <= 0) {
+
             continue;
+
         }
 
 
-        // ----------------------------------------------------
-        // Calculate damage
-        // ----------------------------------------------------
-
-        const procDamage = getProcDamage(
-            itemKey,
-            stacks,
-            parentNode.damage
-        );
+        const procDamage =
+            getProcDamage(
+                itemKey,
+                stacks,
+                parentNode.damage
+            );
 
 
         if (procDamage <= 0) {
+
             continue;
+
         }
 
 
-        // ----------------------------------------------------
-        // Create node
-        // ----------------------------------------------------
+        const childNode =
+            createProcNode(
+                itemKey,
+                stacks,
+                parentNode.damage,
+                chance,
+                procDamage,
+                depth + 1,
+                parentNode.id
+            );
 
-        const childNode = createProcNode(
-            itemKey,
-            stacks,
-            parentNode.damage,
-            chance,
-            procDamage,
-            depth + 1,
-            parentNode.id
-        );
-
-
-        // ----------------------------------------------------
-        // Add child to tree
-        // ----------------------------------------------------
 
         parentNode.children.push(
             childNode
         );
 
 
-        // ----------------------------------------------------
-        // Continue the proc chain
-        // ----------------------------------------------------
+        const nextHistory =
+            new Set(
+                history
+            );
 
-        const nextHistory = new Set(
-            history
-        );
 
         nextHistory.add(
             itemKey
         );
 
 
-        // Items with a zero proc coefficient
-        // terminate the chain.
-        if (item.procCoefficient <= 0) {
+        if (
+            item.procCoefficient <= 0
+        ) {
+
             continue;
+
         }
 
 
@@ -432,7 +513,9 @@ function buildChildren(
             depth + 1,
             nextHistory
         );
+
     }
+
 }
 
 
@@ -440,7 +523,9 @@ function buildChildren(
 // TREE TOTALS
 // ============================================================
 
-function calculateTreeTotals(root) {
+function calculateTreeTotals(
+    root
+) {
 
     let procDamage = 0;
 
@@ -451,20 +536,27 @@ function calculateTreeTotals(root) {
     let maxDepth = 0;
 
 
-    function walk(node, probability) {
+    function walk(
+        node,
+        probability
+    ) {
 
         nodeCount++;
 
-        maxDepth = Math.max(
-            maxDepth,
-            node.depth
-        );
+
+        maxDepth =
+            Math.max(
+                maxDepth,
+                node.depth
+            );
 
 
-        // Root attack always happens.
-        if (node.type === "root") {
+        if (
+            node.type === "root"
+        ) {
 
-            totalDamage += node.damage;
+            totalDamage +=
+                node.damage;
 
         } else {
 
@@ -472,13 +564,20 @@ function calculateTreeTotals(root) {
                 node.damage *
                 probability;
 
-            procDamage += expectedDamage;
 
-            totalDamage += expectedDamage;
+            procDamage +=
+                expectedDamage;
+
+
+            totalDamage +=
+                expectedDamage;
+
         }
 
 
-        for (const child of node.children) {
+        for (
+            const child of node.children
+        ) {
 
             const childProbability =
                 probability *
@@ -489,19 +588,34 @@ function calculateTreeTotals(root) {
                 child,
                 childProbability
             );
+
         }
+
     }
 
 
-    walk(root, 1);
+    walk(
+        root,
+        1
+    );
 
 
     return {
-        procDamage: procDamage,
-        totalDamage: totalDamage,
-        nodeCount: nodeCount,
-        maxDepth: maxDepth
+
+        procDamage:
+            procDamage,
+
+        totalDamage:
+            totalDamage,
+
+        nodeCount:
+            nodeCount,
+
+        maxDepth:
+            maxDepth
+
     };
+
 }
 
 
@@ -509,40 +623,63 @@ function calculateTreeTotals(root) {
 // FLATTEN TREE
 // ============================================================
 
-// Converts the nested tree into a simple array.
-// graph.js will use this when creating visual nodes.
-
-function flattenProcTree(root) {
+function flattenProcTree(
+    root
+) {
 
     const nodes = [];
+
     const edges = [];
 
 
-    function walk(node) {
+    function walk(
+        node
+    ) {
 
-        nodes.push(node);
+        nodes.push(
+            node
+        );
 
 
-        for (const child of node.children) {
+        for (
+            const child of node.children
+        ) {
 
             edges.push({
-                source: node.id,
-                target: child.id
+
+                source:
+                    node.id,
+
+                target:
+                    child.id
+
             });
 
 
-            walk(child);
+            walk(
+                child
+            );
+
         }
+
     }
 
 
-    walk(root);
+    walk(
+        root
+    );
 
 
     return {
-        nodes: nodes,
-        edges: edges
+
+        nodes:
+            nodes,
+
+        edges:
+            edges
+
     };
+
 }
 
 
@@ -555,62 +692,35 @@ function findProcNode(
     nodeId
 ) {
 
-    if (root.id === nodeId) {
+    if (
+        root.id === nodeId
+    ) {
+
         return root;
+
     }
 
 
-    for (const child of root.children) {
+    for (
+        const child of root.children
+    ) {
 
-        const result = findProcNode(
-            child,
-            nodeId
-        );
+        const result =
+            findProcNode(
+                child,
+                nodeId
+            );
 
 
         if (result) {
+
             return result;
+
         }
+
     }
 
 
     return null;
-}
 
-
-// ============================================================
-// TREE SUMMARY
-// ============================================================
-
-function getTreeSummary(result) {
-
-    if (!result) {
-
-        return {
-            baseDamage: 0,
-            expectedProcDamage: 0,
-            totalExpectedDamage: 0,
-            nodeCount: 0,
-            maxDepth: 0
-        };
-    }
-
-
-    return {
-
-        baseDamage:
-            result.baseDamage,
-
-        expectedProcDamage:
-            result.expectedProcDamage,
-
-        totalExpectedDamage:
-            result.totalExpectedDamage,
-
-        nodeCount:
-            result.nodeCount,
-
-        maxDepth:
-            result.maxDepth
-    };
 }
