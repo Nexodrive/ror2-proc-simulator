@@ -1,66 +1,519 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Risk of Rain 2 Proc Engine</title>
-    <style>
-        body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-family: system-ui, sans-serif;
-            padding: 40px;
-            text-align: center;
-        }
-        .box {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            max-width: 500px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-        h1 { color: #ff9900; }
-        button {
-            background-color: #238636;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover { background-color: #2ea043; }
-    </style>
-</head>
-<body>
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoR2 Proc Engine</title>
 
-    <h1>Risk of Rain 2 Proc Chain Tool</h1>
-    <p>Your web project workspace is successfully initialized.</p>
+<link rel="stylesheet" href="css/style.css">
 
-    <div class="box">
-        <h3>Test the Core JavaScript Connection</h3>
-        <button id="testBtn">Run Quick 10k Simulation</button>
-        <p id="output" style="margin-top: 20px; font-weight: bold;"></p>
+</head> <body>
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
+
+<header class="site-header">
+
+    <div class="brand">
+        <div class="brand-kicker">RISK OF RAIN 2</div>
+        <h1>PROC ENGINE</h1>
     </div>
 
-    <script>
-        // A minimal placeholder script to test your browser engine environment
-        document.getElementById('testBtn').addEventListener('click', () => {
-            let totalProcs = 0;
-            const simCount = 10000;
-            const baseChance = 0.10; // 10% AtG Chance
+    <div class="header-actions">
+        <button id="resetViewBtn" class="secondary-btn" type="button">
+            Reset View
+        </button>
 
-            for(let i = 0; i < simCount; i++) {
-                if(Math.random() < baseChance) {
-                    totalProcs++;
-                }
-            }
+        <button id="calculateBtn" class="primary-btn" type="button">
+            Calculate
+        </button>
+    </div>
 
-            const avgResult = (totalProcs / simCount) * 100;
-            document.getElementById('output').innerText = 
-                `Success! Fired ${totalProcs.toLocaleString()} procs. Average rate: ${avgResult.toFixed(2)}%`;
-        });
-    </script>
-</body>
-</html>
+</header>
+
+
+<!-- =========================================================
+     MAIN APPLICATION
+     ========================================================= -->
+
+<main class="app">
+
+    <!-- =====================================================
+         CONFIGURATION PANEL
+         ===================================================== -->
+
+    <section class="control-panel">
+
+        <div class="panel-heading">
+            <div>
+                <span class="section-label">SIMULATION SETUP</span>
+                <h2>Attack Configuration</h2>
+            </div>
+        </div>
+
+
+        <div class="control-grid">
+
+            <!-- Survivor -->
+
+            <div class="control-group">
+
+                <label for="survivorSelect">
+                    Survivor
+                </label>
+
+                <select id="survivorSelect">
+                    <option value="Commando">Commando</option>
+                    <option value="Huntress">Huntress</option>
+                    <option value="MUL-T">MUL-T</option>
+                    <option value="Engineer">Engineer</option>
+                    <option value="Artificer">Artificer</option>
+                    <option value="Mercenary">Mercenary</option>
+                    <option value="REX">REX</option>
+                    <option value="Loader">Loader</option>
+                    <option value="Acrid">Acrid</option>
+                    <option value="Captain">Captain</option>
+                    <option value="Railgunner">Railgunner</option>
+                    <option value="Void Fiend">Void Fiend</option>
+                    <option value="Seeker">Seeker</option>
+                    <option value="Chef">Chef</option>
+                    <option value="False Son">False Son</option>
+                </select>
+
+            </div>
+
+
+            <!-- Level -->
+
+            <div class="control-group">
+
+                <label for="levelInput">
+                    Level
+                </label>
+
+                <input
+                    id="levelInput"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value="1"
+                >
+
+            </div>
+
+
+            <!-- Damage -->
+
+            <div class="control-group">
+
+                <label for="damageInput">
+                    Attack Damage
+                </label>
+
+                <input
+                    id="damageInput"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="12"
+                >
+
+            </div>
+
+
+            <!-- Proc Coefficient -->
+
+            <div class="control-group">
+
+                <label for="procCoefficientInput">
+                    Proc Coefficient
+                </label>
+
+                <input
+                    id="procCoefficientInput"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.01"
+                    value="1"
+                >
+
+            </div>
+
+
+            <!-- Luck -->
+
+            <div class="control-group">
+
+                <label for="luckInput">
+                    Luck
+                </label>
+
+                <input
+                    id="luckInput"
+                    type="number"
+                    min="-100"
+                    max="100"
+                    step="1"
+                    value="0"
+                >
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         INVENTORY
+         ===================================================== -->
+
+    <section class="inventory-panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <span class="section-label">INVENTORY</span>
+                <h2>Proc Items</h2>
+            </div>
+
+            <span id="inventorySummary" class="panel-value">
+                0 items
+            </span>
+
+        </div>
+
+
+        <div id="inventoryGrid" class="inventory-grid">
+
+            <!--
+                Item cards are generated by app.js.
+
+                Example:
+
+                <div class="item-card">
+                    <span>AtG Missile</span>
+                    <button>-</button>
+                    <strong>2</strong>
+                    <button>+</button>
+                </div>
+            -->
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         VIEW MODE
+         ===================================================== -->
+
+    <section class="view-toolbar">
+
+        <div class="view-mode">
+
+            <button
+                id="treeModeBtn"
+                class="view-btn active"
+                type="button"
+            >
+                Tree
+            </button>
+
+            <button
+                id="mathModeBtn"
+                class="view-btn"
+                type="button"
+            >
+                Math
+            </button>
+
+        </div>
+
+
+        <div class="tree-help">
+
+            <span>
+                Scroll to zoom
+            </span>
+
+            <span>
+                Drag to pan
+            </span>
+
+            <span>
+                Click a node for details
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PROC TREE
+         ===================================================== -->
+
+    <section class="tree-panel">
+
+        <div class="tree-header">
+
+            <div>
+                <span class="section-label">
+                    PROC CHAIN
+                </span>
+
+                <h2>
+                    Interactive Proc Tree
+                </h2>
+            </div>
+
+            <div class="tree-stats">
+
+                <div class="tree-stat">
+                    <span>BASE DAMAGE</span>
+                    <strong id="baseDamageDisplay">
+                        12
+                    </strong>
+                </div>
+
+                <div class="tree-stat">
+                    <span>EXPECTED PROC DAMAGE</span>
+                    <strong id="expectedDamageDisplay">
+                        0
+                    </strong>
+                </div>
+
+                <div class="tree-stat">
+                    <span>TOTAL EXPECTED</span>
+                    <strong id="totalDamageDisplay">
+                        12
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!--
+
+            graph.js renders the SVG tree here.
+
+            Do NOT put individual proc nodes in this HTML.
+            The JavaScript engine will generate them from
+            the calculated proc tree.
+
+        -->
+
+        <div
+            id="procTree"
+            class="proc-tree"
+            aria-label="Interactive proc chain visualization"
+        >
+
+            <div class="tree-placeholder">
+
+                <div class="placeholder-icon">
+                    +
+                </div>
+
+                <h3>
+                    No Proc Chain Calculated
+                </h3>
+
+                <p>
+                    Add items to your inventory and press
+                    Calculate to build the proc tree.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SELECTED NODE / DETAILS
+         ===================================================== -->
+
+    <section class="details-panel">
+
+        <div class="details-heading">
+
+            <div>
+                <span class="section-label">
+                    SELECTED NODE
+                </span>
+
+                <h2 id="selectedNodeName">
+                    Initial Attack
+                </h2>
+            </div>
+
+            <span
+                id="selectedNodeType"
+                class="node-type"
+            >
+                BASE HIT
+            </span>
+
+        </div>
+
+
+        <div
+            id="nodeDetails"
+            class="node-details"
+        >
+
+            <div class="detail-grid">
+
+                <div class="detail-stat">
+
+                    <span>
+                        Damage
+                    </span>
+
+                    <strong id="detailDamage">
+                        12
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-stat">
+
+                    <span>
+                        Proc Chance
+                    </span>
+
+                    <strong id="detailChance">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-stat">
+
+                    <span>
+                        Proc Coefficient
+                    </span>
+
+                    <strong id="detailProcCoefficient">
+                        1.00
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-stat">
+
+                    <span>
+                        Expected Damage
+                    </span>
+
+                    <strong id="detailExpectedDamage">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="calculationDisplay"
+                class="calculation-display"
+            >
+
+                <span class="calculation-label">
+                    CALCULATION
+                </span>
+
+                <code id="calculationText">
+                    Initial attack damage
+                </code>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MATH VIEW
+         ===================================================== -->
+
+    <section
+        id="mathPanel"
+        class="math-panel hidden"
+    >
+
+        <div class="panel-heading">
+
+            <div>
+                <span class="section-label">
+                    CALCULATION BREAKDOWN
+                </span>
+
+                <h2>
+                    Proc Mathematics
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div id="mathContent" class="math-content">
+
+            <p class="muted">
+                Calculate a proc chain to see the mathematical
+                breakdown.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+
+<footer class="site-footer">
+
+    <span>
+        RoR2 Proc Engine
+    </span>
+
+    <span>
+        Experimental calculator
+    </span>
+
+</footer>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<!--
+    IMPORTANT:
+    Load data first.
+    Then the calculation engine.
+    Then the graph renderer.
+    Finally the application controller.
+-->
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/graph.js"></script>
+<script src="js/app.js"></script>
+
+</body> </html>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/graph.js"></script>
+<script src="js/app.js"></script>
