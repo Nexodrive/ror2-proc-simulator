@@ -1285,3 +1285,171 @@ function createEmptyInventory() {
 
     return inventory;
 }
+// ============================================================
+// ITEM RARITY / TYPE CORRECTIONS
+// ============================================================
+//
+// Put this AFTER the entire ITEMS object.
+//
+// This fixes incorrect rarity values without requiring you
+// to manually edit each item entry.
+// ============================================================
+
+
+function fixItemByName(name, rarity, itemType = null) {
+    for (const item of Object.values(ITEMS)) {
+        if (!item || item.name !== name) {
+            continue;
+        }
+
+        item.rarity = rarity;
+
+        if (itemType !== null) {
+            item.itemType = itemType;
+        }
+    }
+}
+
+
+// ============================================================
+// MEAL ITEMS
+// ============================================================
+//
+// Meal is a unique item type introduced with Alloyed Collective.
+// These should NOT be Common / Uncommon / Legendary.
+//
+// ============================================================
+
+const MEAL_ITEMS = [
+    "Quick Fix",
+    "Seared Steak",
+    "Hearty Stew",
+    "Sautéed Worms",
+    "Ultimate Meal"
+];
+
+for (const name of MEAL_ITEMS) {
+    fixItemByName(name, "meal", "meal");
+}
+
+
+// ============================================================
+// KNOWN RARITY CORRECTIONS
+// ============================================================
+
+fixItemByName(
+    "Shatterspleen",
+    "boss"
+);
+
+fixItemByName(
+    "Bottled Chaos",
+    "legendary"
+);
+
+fixItemByName(
+    "Executive Card",
+    "equipment"
+);
+
+fixItemByName(
+    "Unstable Transmitter",
+    "uncommon"
+);
+
+fixItemByName(
+    "Faraday Spurs",
+    "uncommon"
+);
+
+fixItemByName(
+    "Box of Dynamite",
+    "uncommon"
+);
+
+fixItemByName(
+    "Collector's Compulsion",
+    "uncommon"
+);
+
+
+// ============================================================
+// GASOLINE DUPLICATE
+// ============================================================
+//
+// Your database contains a second Gasoline entry.
+// Both should be Common.
+//
+// ============================================================
+
+fixItemByName(
+    "Gasoline",
+    "common"
+);
+
+
+// ============================================================
+// RARITY COLORS
+// ============================================================
+//
+// Meal gets its own color.
+// ============================================================
+
+const RARITY_COLORS = {
+    common: "#ffffff",
+    uncommon: "#5acb62",
+    legendary: "#d74646",
+    boss: "#d7a93d",
+    lunar: "#5b9cff",
+    void: "#a65cff",
+    equipment: "#e88932",
+    aspect: "#e88932",
+    meal: "#d6a85c",
+    untiered: "#a0a0a0"
+};
+
+
+// ============================================================
+// DISPLAY NAMES
+// ============================================================
+
+const RARITY_NAMES = {
+    common: "Common",
+    uncommon: "Uncommon",
+    legendary: "Legendary",
+    boss: "Boss",
+    lunar: "Lunar",
+    void: "Void",
+    equipment: "Equipment",
+    aspect: "Aspect",
+    meal: "Meal",
+    untiered: "Untiered"
+};
+
+
+// ============================================================
+// ITEM ORDER
+// ============================================================
+//
+// Prevents the selector from failing if ITEM_ORDER is missing.
+// ============================================================
+
+const ITEM_ORDER = Object.keys(ITEMS);
+
+
+// ============================================================
+// DEBUG INFORMATION
+// ============================================================
+
+console.log(
+    "Loaded",
+    Object.keys(ITEMS).length,
+    "items."
+);
+
+console.log(
+    "Meal Items:",
+    Object.values(ITEMS)
+        .filter(item => item && item.rarity === "meal")
+        .map(item => item.name)
+);
