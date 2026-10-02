@@ -1175,3 +1175,113 @@ const EQUIPMENT = {
     "crowdfunder": {
         name: "Crowdfunder",
         rarity: "equipment"
+        // ============================================================
+// ITEM DATABASE HELPERS
+// ============================================================
+
+// Every item gets a sensible default stack limit.
+// Individual items can override this later if needed.
+for (const itemKey of Object.keys(ITEMS)) {
+    const item = ITEMS[itemKey];
+
+    if (!item.maxStacks) {
+        item.maxStacks = 99;
+    }
+
+    if (!item.shortName) {
+        item.shortName = item.name;
+    }
+
+    // The UI groups items using "category".
+    // Your database currently uses "rarity", so map it here.
+    if (!item.category) {
+        const categoryMap = {
+            common: "Common",
+            uncommon: "Uncommon",
+            legendary: "Legendary",
+            boss: "Boss",
+            lunar: "Lunar",
+            void: "Void",
+            equipment: "Equipment",
+            aspect: "Equipment",
+            untiered: "Other"
+        };
+
+        item.category =
+            categoryMap[item.rarity] || "Other";
+    }
+
+    // Convert the database's percentage chance into
+    // the decimal format used by the proc engine.
+    if (typeof item.chance !== "function") {
+        item.chance = function (stacks) {
+            const baseChance =
+                Number(this.baseChance) || 0;
+
+            return Math.max(
+                0,
+                Math.min(
+                    1,
+                    (baseChance / 100) * stacks
+                )
+            );
+        };
+    }
+
+    // Convert item damage information into a multiplier
+    // of the damage that caused the proc.
+    if (typeof item.damageMultiplier !== "function") {
+        item.damageMultiplier = function (stacks) {
+            const damage =
+                Number(this.damage) || 0;
+
+            const stackDamage =
+                Number(this.stackDamage) || 0;
+
+            if (stacks <= 0) {
+                return 0;
+            }
+
+            // In this database, damage values are percentages.
+            const totalPercent =
+                damage +
+                Math.max(0, stacks - 1) * stackDamage;
+
+            return totalPercent / 100;
+        };
+    }
+
+    // Items that don't have proc data should never
+    // accidentally become proc items.
+    if (item.proc !== true) {
+        item.chance = function () {
+            return 0;
+        };
+
+        item.damageMultiplier = function () {
+            return 0;
+        };
+    }
+}
+
+
+// ============================================================
+// ITEM ORDER
+// ============================================================
+
+const ITEM_ORDER = Object.keys(ITEMS);
+
+
+// ============================================================
+// INVENTORY HELPERS
+// ============================================================
+
+function createEmptyInventory() {
+    const inventory = {};
+
+    for (const itemKey of ITEM_ORDER) {
+        inventory[itemKey] = 0;
+    }
+
+    return inventory;
+}

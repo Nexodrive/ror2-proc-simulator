@@ -227,7 +227,7 @@ function initializeItemDropdown() {
 
 
     for (
-        const itemKey of ITEM_ORDER
+        const itemKey of Object.keys(ITEMS)
     ) {
 
         const item =
@@ -522,19 +522,34 @@ function initializeControls() {
 // ADD ITEM
 // ============================================================
 
-function addInventoryItem(
-    itemKey
-) {
-
-    const item =
-        ITEMS[itemKey];
-
+function addInventoryItem(itemKey) {
+    const item = ITEMS[itemKey];
 
     if (!item) {
-
+        console.warn(
+            "Attempted to add unknown item:",
+            itemKey
+        );
         return;
-
     }
+
+    const currentStacks =
+        Number(state.inventory[itemKey] || 0);
+
+    const maxStacks =
+        Number(item.maxStacks) || 99;
+
+    if (currentStacks >= maxStacks) {
+        return;
+    }
+
+    state.inventory[itemKey] =
+        currentStacks + 1;
+
+    updateInventoryDisplay();
+    calculate();
+}
+
 
 
     const current =
